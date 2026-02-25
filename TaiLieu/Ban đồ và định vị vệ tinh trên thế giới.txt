@@ -1,0 +1,106 @@
+- Hình thành và phát triển
+Nguồn gốc: Hệ tọa độ UTM (Universal Transverse Mercator) được Cục Công binh Quân đội Mỹ (Army Corps of Engineers) phát triển vào những năm 1940.
+Mục đích: Tạo ra một hệ thống lưới tọa độ chuẩn hóa, thống nhất trên toàn cầu cho các chiến dịch quân sự, thay thế các hệ tọa độ lưới địa phương phức tạp.
+Nguyên lý: Sử dụng phép chiếu hình trụ ngang đồng góc (Transverse Mercator). Hệ thống chia bề mặt Trái Đất thành 60 múi (zone), mỗi múi rộng 6 độ kinh tuyến, đánh số từ 1 đến 60 bắt đầu từ đường đổi ngày quốc tế và tiến về phía Đông.
+- Ứng dụng từ đó đến nay
+Giai đoạn đầu (Quân sự): Dùng làm tiêu chuẩn cho pháo binh, bộ binh định vị mục tiêu, tính toán đường đạn, đo khoảng cách và lập kế hoạch tác chiến nhanh chóng trên thực địa.
+Hiện tại (Quân sự và Dân sự): Trở thành một trong những hệ tọa độ bản đồ phổ biến nhất thế giới. Nó là tiêu chuẩn cơ sở cho Hệ thống Định vị Toàn cầu (GPS), bản đồ địa hình quốc gia của nhiều nước, khảo sát trắc địa, hàng hải, và Hệ thống Thông tin Địa lý (GIS).
+- Mảnh bản đồ Đông Nam Á
+Vị trí UTM: Khu vực Đông Nam Á (bao gồm Việt Nam) chủ yếu nằm gọn trong các múi UTM số 47 và 48 (Bắc bán cầu).
+Bộ bản đồ lịch sử: Trong Chiến tranh Việt Nam, Nha Bản đồ Quân đội Mỹ (Army Map Service - AMS) đã sản xuất bộ bản đồ địa hình Đông Dương tỷ lệ 1:50.000 (series L7014). Bộ bản đồ này có độ chi tiết rất cao, chia thành các ô lưới (grid square) 1km x 1km, cho phép đọc tọa độ nhanh tới độ chính xác chục mét.
+- Ứng dụng UTM của Việt Nam
+Thời kỳ hậu chiến: Sau năm 1975, Việt Nam tiếp quản và tái sử dụng một lượng lớn bản đồ UTM do Mỹ để lại để phục vụ rà phá bom mìn, quy hoạch kinh tế và quốc phòng.
+Hệ tọa độ Quốc gia VN-2000: Hệ thống định vị và bản đồ chính thức hiện tại của Việt Nam (VN-2000) được xây dựng dựa trên nguyên lý phép chiếu Transverse Mercator. Nó sử dụng múi chiếu 6 độ (cho bản đồ tỷ lệ nhỏ) và 3 độ (cho bản đồ tỷ lệ lớn và đo đạc địa chính), kết hợp với Ellipsoid WGS-84.
+Thực tiễn: Áp dụng toàn diện trong cấp giấy chứng nhận quyền sử dụng đất, quy hoạch đô thị, định vị và xây dựng cơ sở dữ liệu đất đai quốc gia.
+
+
+
+- Nguồn gốc và Nguyên lý
+Tên gọi: Hệ tọa độ Gauss-Krüger. Được phát triển bởi Carl Friedrich Gauss và Johann Heinrich Louis Krüger.
+Nguyên lý: Sử dụng phép chiếu hình trụ ngang đồng góc. Bề mặt Trái Đất được chia thành 60 múi, mỗi múi rộng 6 độ kinh tuyến.
+Khác biệt cốt lõi với UTM: * Đánh số múi bắt đầu từ kinh tuyến gốc Greenwich (0 độ) đi sang Đông (múi số 1 của Gauss trùng với múi số 31 của UTM).
+* Hệ số tỷ lệ biến dạng tại kinh tuyến trục là 1.0 (giữ nguyên độ dài), trong khi UTM là 0.9996.
+- Sự phát triển tại Liên Xô (Hệ SK-42)
+Hình thành: Liên Xô chính thức áp dụng phép chiếu Gauss-Krüger từ năm 1928.
+Chuẩn hóa: Đến năm 1946, Liên Xô hoàn thiện và ban hành Hệ tọa độ 1942 (viết tắt là SK-42), sử dụng khối Ellipsoid Krasovsky 1940.
+Mục đích: Trở thành hệ thống trắc địa và bản đồ địa hình tiêu chuẩn, thống nhất cho toàn bộ lực lượng vũ trang Liên Xô, phục vụ pháo binh, tên lửa và bộ binh.
+- Ứng dụng và Ảnh hưởng
+Giai đoạn Chiến tranh Lạnh: SK-42 và phép chiếu Gauss-Krüger là tiêu chuẩn bản đồ quân sự bắt buộc của toàn bộ các nước thuộc khối XHCN và Hiệp ước Warsaw.
+Nga hiện đại: Dù Nga đã nâng cấp lên các hệ tọa độ mới (như SK-95, hay hệ PZ-90 dùng cho vệ tinh GLONASS), nền tảng phân chia lưới bản đồ và nguyên lý đo đạc vẫn dựa nhiều vào hệ Gauss-Krüger ban đầu.
+- Ảnh hưởng tại Việt Nam
+Hệ HN-72: Nhờ sự viện trợ kỹ thuật từ Liên Xô, Việt Nam đã xây dựng Hệ tọa độ Quốc gia HN-72 (Hà Nội 1972). Hệ này áp dụng triệt để nguyên lý của SK-42, sử dụng Ellipsoid Krasovsky và phép chiếu Gauss-Krüger.
+Thực tiễn: Toàn bộ bản đồ quân sự của Quân đội Nhân dân Việt Nam và bản đồ đo đạc dân sự từ trước năm 2000 đều sử dụng hệ lưới Gauss này. Sau năm 2000, Việt Nam mới chuyển sang hệ VN-2000 (áp dụng phép chiếu UTM).
+
+Các hệ thống định vị vệ tinh
+a) Hệ thống GPS (Mỹ)
+- Quản lý: Bộ Quốc phòng Mỹ. Hệ thống định vị toàn cầu đầu tiên và phổ biến nhất.
+- Cấu trúc: Duy trì khoảng 31 vệ tinh hoạt động ở quỹ đạo Trái Đất tầm trung (MEO). Sử dụng hệ tọa độ WGS-84.
+- Độ chính xác: Dân sự dưới 5m (có thể đạt dưới 1m với thiết bị thu băng tần kép L1/L5). Quân sự dưới 30cm.
+- Tình trạng hiện nay: Đang trong quá trình nâng cấp lên thế hệ vệ tinh Block III, cải thiện độ chính xác, tăng cường tín hiệu L1C dân sự và khả năng chống nhiễu (anti-jamming) cho quân sự.
+b) Hệ thống GLONASS (Nga)
+- Quản lý: Lực lượng Không gian Vũ trụ Nga.
+- Cấu trúc: Cần 24 vệ tinh để phủ sóng toàn cầu, hiện duy trì đủ số lượng này ở quỹ đạo MEO. Sử dụng hệ tọa độ PZ-90.
+- Độ chính xác: Dân sự trung bình từ 2.8m đến 7m.
+- Đặc điểm kỹ thuật: Quỹ đạo của GLONASS có độ nghiêng lớn hơn GPS, giúp tối ưu hóa việc thu nhận tín hiệu và tăng độ chính xác ở các khu vực vĩ độ cao (gần hai cực). Nó thường được các thiết bị dân sự sử dụng song song với GPS để tăng số lượng vệ tinh có thể "nhìn thấy".
+c) Hệ thống BeiDou (Bắc Đẩu - Trung Quốc)
+- Quản lý: Cơ quan Vũ trụ Quốc gia Trung Quốc (CNSA). Thế hệ toàn cầu (BDS-3) hoàn thiện và đi vào hoạt động từ năm 2020.
+- Cấu trúc: Sở hữu chòm sao vệ tinh đông đảo nhất (hơn 40 vệ tinh đang hoạt động). Kết hợp 3 loại quỹ đạo: MEO (tầm trung), IGSO (địa đồng bộ nghiêng) và GEO (địa tĩnh). Sử dụng hệ tọa độ CGCS2000.
+- Độ chính xác: Toàn cầu dưới 3.6m. Đặc biệt tại khu vực Châu Á - Thái Bình Dương đạt dưới 1m (do mật độ vệ tinh khu vực này rất dày).
+- Đặc điểm kỹ thuật: Tích hợp khả năng liên lạc nhắn tin văn bản ngắn (short message communication) hai chiều trực tiếp qua vệ tinh mà không cần trạm viễn thông mặt đất.
+
+d) Hệ thống Galileo
+- Quản lý: Liên minh Châu Âu (EU) thông qua Cơ quan Vũ trụ Châu Âu (ESA) và Cơ quan Chương trình Không gian EU (EUSPA).
+Đặc điểm cốt lõi: Là hệ thống định vị toàn cầu duy nhất trên thế giới được thiết kế và kiểm soát hoàn toàn bởi các cơ quan "dân sự" (khác với GPS, GLONASS, và BeiDou đều do quân đội quản lý).
+- Cấu trúc: Hoạt động với khoảng 24 vệ tinh chính thức (cùng các vệ tinh dự phòng) trên quỹ đạo Trái Đất tầm trung (MEO) ở độ cao 23.222 km.
+Hệ tọa độ: Sử dụng Khung tham chiếu Hệ mặt đất Galileo (GTRF), được thiết kế để tương thích và đồng bộ gần như tuyệt đối với hệ WGS-84 của GPS (chênh lệch chỉ vài centimet).
+- Độ chính xác
+Dịch vụ mở (Open Service - OS): Miễn phí cho dân sự, độ chính xác định vị dưới 1 mét (cao hơn GPS dân sự tiêu chuẩn).
+Dịch vụ độ chính xác cao (HAS): Cung cấp sai số dưới 20cm hoàn toàn miễn phí trên toàn cầu. Đây là điểm vượt trội nhất của Galileo so với các hệ thống khác.
+Dịch vụ công cộng được quản lý (PRS): Dành riêng cho chính phủ, quân đội và các dịch vụ khẩn cấp của EU, sử dụng tín hiệu mã hóa với khả năng chống kẹt sóng và chống giả mạo cực cao.
+- Tính năng đặc biệt: Cứu nạn (SAR)
+* Galileo đóng góp vào mạng lưới tìm kiếm cứu nạn toàn cầu Cospas-Sarsat.
+Return Link Service (RLS): Là hệ thống GNSS đầu tiên có khả năng gửi tín hiệu phản hồi (chiều về) cho thiết bị của người bị nạn, thông báo rằng tín hiệu SOS và vị trí của họ đã được đội cứu hộ tiếp nhận.
+
+
+Có hàng chục hệ thống bản đồ trên thế giới, nhưng xét về quy mô lớn, chúng được chia thành 3 nhóm chính dựa trên độ "mở":
+a) Nhóm mở hoàn toàn (Open Data / Open Source)
+OpenStreetMap (OSM): Độ mở 100%. Dữ liệu thuộc về cộng đồng (giấy phép ODbL). Bất kỳ ai cũng có thể đóng góp, tải về toàn bộ cơ sở dữ liệu và sử dụng miễn phí cho mọi mục đích.
+Overture Maps Foundation: Độ mở rất cao (dữ liệu mở). Do Linux Foundation, Meta, Amazon, Microsoft và TomTom lập ra để cạnh tranh với sự độc quyền của Google. Họ lấy dữ liệu từ OSM và nhiều nguồn khác, chuẩn hóa lại và cung cấp miễn phí cho các nhà phát triển.
+b) Nhóm bán mở (Sử dụng dữ liệu mở nhưng dịch vụ đóng)
+Mapbox: Độ mở trung bình. Sử dụng dữ liệu cốt lõi từ OSM, nhưng hệ thống máy chủ, thuật toán render (vẽ bản đồ) và API phân phối là thương mại đóng. Lập trình viên được dùng API miễn phí trong giới hạn định mức, vượt mức phải trả tiền.
+Mapillary: Mạng lưới hình ảnh đường phố (Street View) huy động từ cộng đồng. Hình ảnh được chia sẻ mở theo giấy phép CC BY-SA, nhưng nền tảng và cơ sở dữ liệu cốt lõi thuộc sở hữu của Meta (Facebook).
+c) Nhóm đóng hoàn toàn (Proprietary / Độc quyền)
+Độ mở 0%. Dữ liệu tự thu thập hoặc mua bản quyền, không chia sẻ mã nguồn, không cho cộng đồng can thiệp dữ liệu gốc. Lập trình viên phải trả phí API.
+HERE WeGo (trước là Nokia Maps): Thuộc liên minh các hãng xe Đức (Audi, BMW, Mercedes). Tập trung rất mạnh vào bản đồ cho xe hơi tự lái và doanh nghiệp B2B.
+TomTom: Hãng bản đồ của Hà Lan, chuyên dữ liệu giao thông thời gian thực và thiết bị GPS định vị.
+Apple Maps: Đóng hoàn toàn, chỉ hoạt động tối ưu trong hệ sinh thái phần cứng của Apple.
+Bing Maps: Của Microsoft, cơ chế tương tự Google Maps.
+Bản đồ nội địa hóa: Baidu Maps / Gaode (Trung Quốc), Yandex Maps (Nga), Naver / Kakao (Hàn Quốc). Đóng kín, chủ yếu phục vụ ngôn ngữ và quy định chính phủ tại quốc gia đó.
+
+
+1. Hệ tọa độ quốc gia VN-2000
+Cơ sở pháp lý: Áp dụng thống nhất trên toàn quốc từ năm 2000, thay thế hoàn toàn hệ tọa độ HN-72 cũ.
+Thông số kỹ thuật cốt lõi:
+Ellipsoid tham chiếu: Sử dụng hệ WGS-84 toàn cầu (định vị cục bộ phù hợp với lãnh thổ Việt Nam). Điều này giúp VN-2000 tương thích trực tiếp với các thiết bị GPS hiện đại.
+Phép chiếu: Lưới chiếu hình trụ ngang đồng góc UTM.
+Kinh tuyến trục và Múi chiếu: Chia múi 6 độ cho bản đồ tỷ lệ nhỏ (từ 1:25.000 trở xuống) và múi 3 độ cho bản đồ tỷ lệ lớn, bản đồ địa chính (1:10.000 trở lên). Điểm gốc tọa độ quốc gia (N00) đặt tại Hà Nội.
+
+
+
+2. Công tác cập nhật bản đồ hiện nay
+
+Cơ quan thực hiện: Cục Đo đạc, Bản đồ và Thông tin địa lý Việt Nam (Bộ TN&MT) quản lý dân sự; Cục Bản đồ (Bộ Tổng Tham mưu) quản lý hệ thống quân sự.
+Công nghệ áp dụng:
+Viễn thám: Khai thác ảnh vệ tinh quang học và radar độ phân giải cao để theo dõi biến động lớp phủ bề mặt (rừng, nguồn nước, đô thị).
+UAV/Drone và LiDAR: Được sử dụng phổ biến ở cấp cơ sở và doanh nghiệp để bay chụp không ảnh, quét địa hình 3D, phục vụ cập nhật nhanh bản đồ địa chính, quy hoạch khu vực hẹp.
+Mạng lưới trạm định vị CORS (VNGEONET): Việt Nam đã triển khai hàng chục trạm định vị vệ tinh quốc gia phủ sóng toàn quốc. Cung cấp tín hiệu cải chính RTK theo thời gian thực, giúp các thiết bị thu (như máy đo đạc, UAV) đạt độ chính xác định vị tới hàng centimet.
+
+
+Thực trạng:
+* Đang số hóa và hoàn thiện Cơ sở dữ liệu nền địa lý quốc gia trên môi trường GIS.
+Thách thức: Quá trình phát triển kinh tế, đô thị hóa và thay đổi địa hình diễn ra quá nhanh khiến chu kỳ cập nhật bản đồ truyền thống (thường từ 3-5 năm) ở nhiều địa phương không theo kịp hiện trạng thực tế.
+
+
+
+Bạn có muốn tìm hiểu về cách kết nối thiết bị với mạng lưới trạm CORS quốc gia (VNGEONET) để lấy tọa độ chính xác cao phục vụ đo đạc bằng UAV không?
+
