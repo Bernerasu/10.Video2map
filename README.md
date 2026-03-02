@@ -110,4 +110,8 @@ Chi tiết: xem [`roadmap.md`](./roadmap.md)
 
 ---
 
+<<<<<<< HEAD
 *Video2Map — Bản đồ từ cộng đồng, cho cộng đồng.*
+=======
+*Video2Map — Bản đồ từ cộng đồng, cho cộng đồng.*
+>>>>>>> 3f77cc68a5d101b5b7a950b266b7c9cc6abaeae2
