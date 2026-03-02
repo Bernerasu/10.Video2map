@@ -83,3 +83,95 @@ from ultralytics import YOLO; print('Ultralytics: OK')
 | PyTorch | 2.5.0a0+872d972e41.nv24.08 | ✅ CUDA: True |
 | torchvision | 0.20.0a0+afc54f7 | ✅ |
 | Ultralytics | OK | ✅ |
+
+# Video2Map - Tìm GPS metadata từ video DJI Mini 4 Pro
+
+**Ngày:** 01/03/2026  
+**Video test:** DJI_20260226141901_0017_D_MINHTHIEN.MP4
+
+---
+
+## Bước 1: Kiểm tra metadata cơ bản (exiftool)
+
+```bash
+# Cài exiftool
+sudo apt install -y libimage-exiftool-perl
+
+# Tìm GPS trong metadata thông thường → KHÔNG CÓ
+exiftool -ee -G3 Video_drone/DJI_20260226141901_0017_D_MINHTHIEN.MP4 | grep -i "gps\|lat\|lon\|alt\|gimbal"
+
+# Xem metadata tổng quát
+exiftool Video_drone/DJI_20260226141901_0017_D_MINHTHIEN.MP4 | head -40
+```
+
+**Kết quả:** Không có GPS trong exif metadata thông thường.
+
+---
+
+## Bước 2: Kiểm tra video tracks (ffprobe)
+
+```bash
+ffprobe -v error -show_streams Video_drone/DJI_20260226141901_0017_D_MINHTHIEN.MP4 | grep -E "codec_type|codec_name|TAG"
+```
+
+**Kết quả:** Phát hiện 4 tracks:
+| Track | Loại | Nội dung |
+|-------|------|----------|
+| Stream 0:0 | Video | H.264 4K 3840x2160 48fps |
+| Stream 0:1 | Data | **DJI meta** (djmd) ← GPS ở đây |
+| Stream 0:2 | Data | DJI dbgi (debug info) |
+| Stream 0:3 | Video | MJPEG 1280x720 (thumbnail) |
+
+---
+
+## Bước 3: Extract DJI meta track
+
+```bash
+# Extract raw binary từ DJI meta track
+ffmpeg -i Video_drone/DJI_20260226141901_0017_D_MINHTHIEN.MP4 -map 0:d:0 -f data -c copy /tmp/dji_meta.bin
+
+# Xem hex dump
+xxd /tmp/dji_meta.bin | head -30
+```
+
+**Kết quả:** DJI Mini 4 Pro lưu metadata ở format **Protobuf binary** (file header: `dvtm_Mini4_Pro.proto`).
+
+---
+
+## Bước 4: Parse GPS từ binary (đang làm)
+
+```bash
+pip install protobuf
+
+python3 -c "
+import struct
+
+with open('/tmp/dji_meta.bin', 'rb') as f:
+    data = f.read()
+
+print(f'File size: {len(data)} bytes')
+
+# Tìm tọa độ GPS (double) trong vùng Việt Nam
+# Latitude: 8-23, Longitude: 100-115
+results = []
+for i in range(len(data) - 8):
+    val = struct.unpack('<d', data[i:i+8])[0]
+    if 8.0 < val < 23.0:
+        results.append(('lat?', i, val))
+    elif 100.0 < val < 115.0:
+        results.append(('lon?', i, val))
+
+for tag, offset, val in results:
+    print(f'  {tag} offset={offset}: {val:.8f}')
+"
+```
+
+---
+
+## Ghi chú kỹ thuật
+
+- DJI Mini 4 Pro **KHÔNG** lưu GPS vào exif metadata thông thường
+- GPS nằm trong track riêng "DJI meta" (codec: djmd)
+- Format: Protobuf binary (dvtm_Mini4_Pro.proto)
+- Track khác "DJI dbgi" chứa debug info, không cần
+- File LRF (Low Resolution File) cũng chứa cùng metadata structure
