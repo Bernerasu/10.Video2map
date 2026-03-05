@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video2Map — Bản đồ Việt Nam</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-dark: #0a0f1a;
+            --bg-panel: #111827;
+            --bg-card: #1a2234;
+            --accent: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.25);
+            --text-primary: #e8edf5;
+            --text-secondary: #8892a4;
+            --text-muted: #4b5563;
+            --border: #1e293b;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ── TOP BAR ── */
+        .topbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 56px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+        }
+
+        .topbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .topbar-logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent), #059669);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -1px;
+        }
+
+        .topbar-title {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .topbar-title span {
+            color: var(--accent);
+        }
+
+        .topbar-status {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: inline-block;
+            margin-right: 5px;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .topbar-coords {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            background: var(--bg-dark);
+            padding: 4px 10px;
+            border-radius: 4px;
+            min-width: 240px;
+            text-align: center;
+        }
+
+        /* ── MAP ── */
+        #map {
+            position: fixed;
+            top: 56px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+        }
+
+        /* ── SIDE PANEL ── */
+        .side-panel {
+            position: fixed;
+            top: 72px;
+            left: 16px;
+            width: 280px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            z-index: 1000;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        .panel-section {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel-section:last-child {
+            border-bottom: none;
+        }
+
+        .panel-section-title {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        /* ── LAYER BUTTONS ── */
+        .layer-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 9px 12px;
+            margin-bottom: 6px;
+            background: var(--bg-dark);
+            border: 1.5px solid transparent;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-family: 'Be Vietnam Pro', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .layer-btn:last-child { margin-bottom: 0; }
+
+        .layer-btn:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        .layer-btn.active {
+            border-color: var(--accent);
+            background: rgba(16, 185, 129, 0.08);
+            color: var(--accent);
+        }
+
+        .layer-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .layer-btn.active .layer-icon {
+            background: var(--accent-glow);
+        }
+
+        .layer-meta {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        .layer-btn.active .layer-meta {
+            color: rgba(16, 185, 129, 0.6);
+        }
+
+        /* ── DRONE LAYER (chưa có dữ liệu) ── */
+        .layer-btn.drone-pending {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        .layer-btn.drone-pending .badge-pending {
+            font-size: 9px;
+            background: var(--warning);
+            color: #000;
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-weight: 700;
+            margin-left: auto;
+        }
+
+        /* ── COVERAGE STATS ── */
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .stat-value {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-value.accent { color: var(--accent); }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--bg-dark);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #34d399);
+            border-radius: 2px;
+            width: 0.1%;
+            transition: width 1.5s ease;
+        }
+
+        /* ── INFO PANEL (bottom-right) ── */
+        .info-panel {
+            position: fixed;
+            bottom: 24px;
+            right: 16px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            z-index: 1000;
+            font-size: 11px;
+            color: var(--text-muted);
+            max-width: 320px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        }
+
+        .info-panel a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .info-panel .legal-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* ── QUICK NAV ── */
+        .quick-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .nav-chip {
+            padding: 5px 10px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: 'Be Vietnam Pro', sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        .nav-chip:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        /* ── LEAFLET OVERRIDES ── */
+        .leaflet-control-zoom {
+            border: 1px solid var(--border) !important;
+            border-radius: 8px !important;
+            overflow: hidden;
+        }
+
+        .leaflet-control-zoom a {
+            background: var(--bg-panel) !important;
+            color: var(--text-primary) !important;
+            border-color: var(--border) !important;
+            width: 34px !important;
+            height: 34px !important;
+            line-height: 34px !important;
+            font-size: 16px !important;
+        }
+
+        .leaflet-control-zoom a:hover {
+            background: var(--bg-card) !important;
+        }
+
+        .leaflet-control-attribution {
+            display: none;
+        }
+
+        .leaflet-control-scale-line {
+            background: var(--bg-panel) !important;
+            border-color: var(--text-muted) !important;
+            color: var(--text-secondary) !important;
+            font-family: 'Be Vietnam Pro', sans-serif !important;
+            font-size: 10px !important;
+            padding: 2px 6px !important;
+            border-radius: 3px;
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 640px) {
+            .side-panel { width: calc(100% - 32px); }
+            .topbar-coords { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+    <div class="topbar-brand">
+        <div class="topbar-logo">V2</div>
+        <div class="topbar-title">Video<span>2</span>Map</div>
+    </div>
+    <div class="topbar-coords" id="coordsDisplay">Di chuyển chuột trên bản đồ</div>
+    <div class="topbar-status">
+        <span><span class="status-dot"></span>Phase 1.5 — Baseline Map</span>
+    </div>
+</div>
+
+<!-- MAP -->
+<div id="map"></div>
+
+<!-- SIDE PANEL -->
+<div class="side-panel">
+    <!-- Layers -->
+    <div class="panel-section">
+        <div class="panel-section-title">Lớp bản đồ</div>
+        <button class="layer-btn active" id="btnOSM" onclick="switchLayer('osm')">
+            <div class="layer-icon">🗺️</div>
+            <div>
+                <div>OpenStreetMap</div>
+                <div class="layer-meta">Vector — đường, nhà, POI</div>
+            </div>
+        </button>
+        <button class="layer-btn" id="btnSatellite" onclick="switchLayer('satellite')">
+            <div class="layer-icon">🛰️</div>
+            <div>
+                <div>Ảnh vệ tinh</div>
+                <div class="layer-meta">Esri World Imagery — ~1m</div>
+            </div>
+        </button>
+        <button class="layer-btn" id="btnHybrid" onclick="switchLayer('hybrid')">
+            <div class="layer-icon">📡</div>
+            <div>
+                <div>Vệ tinh + Nhãn</div>
+                <div class="layer-meta">Esri Imagery + OSM labels</div>
+            </div>
+        </button>
+        <button class="layer-btn drone-pending" id="btnDrone">
+            <div class="layer-icon">📷</div>
+            <div>
+                <div>Ảnh Drone</div>
+                <div class="layer-meta">Chờ dữ liệu từ cộng đồng</div>
+            </div>
+            <span class="badge-pending">SẮP CÓ</span>
+        </button>
+    </div>
+
+    <!-- Quick Nav -->
+    <div class="panel-section">
+        <div class="panel-section-title">Vùng trọng điểm lũ</div>
+        <div class="quick-nav">
+            <div class="nav-chip" onclick="flyTo(16.47, 107.59, 13)">Huế</div>
+            <div class="nav-chip" onclick="flyTo(15.87, 108.33, 13)">Hội An</div>
+            <div class="nav-chip" onclick="flyTo(15.44, 108.06, 12)">Quảng Nam</div>
+            <div class="nav-chip" onclick="flyTo(17.47, 106.62, 12)">Quảng Bình</div>
+            <div class="nav-chip" onclick="flyTo(16.75, 107.19, 12)">Quảng Trị</div>
+            <div class="nav-chip" onclick="flyTo(18.67, 105.68, 12)">Nghệ An</div>
+            <div class="nav-chip" onclick="flyTo(18.34, 105.89, 12)">Hà Tĩnh</div>
+            <div class="nav-chip" onclick="flyTo(21.03, 105.85, 12)">Hà Nội</div>
+        </div>
+    </div>
+
+    <!-- Coverage -->
+    <div class="panel-section">
+        <div class="panel-section-title">Phủ sóng ảnh drone</div>
+        <div class="stat-row">
+            <span class="stat-label">Khu vực đã có</span>
+            <span class="stat-value accent">0</span>
+        </div>
+        <div class="stat-row">
+            <span class="stat-label">Tổng diện tích</span>
+            <span class="stat-value">0 km²</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="coverageBar"></div>
+        </div>
+        <div style="font-size:10px; color:var(--text-muted); margin-top:6px; text-align:right;">
+            Mục tiêu: phủ vùng trọng điểm lũ miền Trung
+        </div>
+    </div>
+</div>
+
+<!-- INFO PANEL -->
+<div class="info-panel">
+    <div class="legal-row">
+        <span>Nền: <a href="https://www.esri.com" target="_blank">Esri</a>, <a href="https://www.openstreetmap.org/copyright" target="_blank">OSM</a></span>
+        <span>•</span>
+        <span>Dự án: <a href="https://github.com" target="_blank">Video2Map (AGPLv3)</a></span>
+    </div>
+</div>
+
+<script>
+    // ── MAP INIT ──
+    const map = L.map('map', {
+        center: [16.0, 107.0],
+        zoom: 6,
+        zoomControl: false,
+        attributionControl: false
+    });
+
+    L.control.zoom({ position: 'bottomleft' }).addTo(map);
+    L.control.scale({ position: 'bottomleft', imperial: false }).addTo(map);
+
+    // ── TILE LAYERS ──
+    const layers = {
+        osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19
+        }),
+        satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 19
+        }),
+        // Labels overlay cho hybrid mode
+        labels: L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
+            maxZoom: 19,
+            pane: 'overlayPane'
+        })
+    };
+
+    // Default: OSM
+    let currentLayer = 'osm';
+    layers.osm.addTo(map);
+
+    function switchLayer(name) {
+        // Remove all base layers
+        Object.values(layers).forEach(l => map.removeLayer(l));
+
+        if (name === 'osm') {
+            layers.osm.addTo(map);
+        } else if (name === 'satellite') {
+            layers.satellite.addTo(map);
+        } else if (name === 'hybrid') {
+            layers.satellite.addTo(map);
+            layers.labels.addTo(map);
+        }
+
+        currentLayer = name;
+
+        // Update button states
+        document.querySelectorAll('.layer-btn:not(.drone-pending)').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        const btnMap = { osm: 'btnOSM', satellite: 'btnSatellite', hybrid: 'btnHybrid' };
+        document.getElementById(btnMap[name])?.classList.add('active');
+    }
+
+    // ── QUICK NAV ──
+    function flyTo(lat, lng, zoom) {
+        map.flyTo([lat, lng], zoom, { duration: 1.5 });
+    }
+
+    // ── COORDS DISPLAY ──
+    map.on('mousemove', function(e) {
+        const lat = e.latlng.lat.toFixed(6);
+        const lng = e.latlng.lng.toFixed(6);
+        document.getElementById('coordsDisplay').textContent =
+            `${lat}°N  ${lng}°E  |  Zoom: ${map.getZoom()}`;
+    });
+
+    map.on('zoomend', function() {
+        const center = map.getCenter();
+        document.getElementById('coordsDisplay').textContent =
+            `${center.lat.toFixed(6)}°N  ${center.lng.toFixed(6)}°E  |  Zoom: ${map.getZoom()}`;
+    });
+
+    // ── ANIMATE COVERAGE BAR (demo) ──
+    setTimeout(() => {
+        document.getElementById('coverageBar').style.width = '0.1%';
+    }, 500);
+
+    // ── PLACEHOLDER: Future drone tile layer ──
+    // Khi có dữ liệu drone, uncomment và cập nhật URL:
+    //
+    // const droneLayer = L.tileLayer('http://<jetson-ip>/tiles/{z}/{x}/{y}.png', {
+    //     maxZoom: 22,
+    //     opacity: 1.0,
+    //     bounds: [[lat_sw, lng_sw], [lat_ne, lng_ne]]  // giới hạn vùng có dữ liệu
+    // });
+    //
+    // Để bật slider so sánh (cần thêm leaflet-side-by-side plugin):
+    // L.control.sideBySide(layers.satellite, droneLayer).addTo(map);
+</script>
+
+</body>
+</html>
