@@ -1,5 +1,6 @@
-TaiLieu/
 Video_drone/
+.vscode/
 venv/
 __pycache__/
 *.pyc
+*.mp4
