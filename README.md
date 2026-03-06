@@ -101,7 +101,6 @@ Chi tiết: xem [`roadmap.md`](./roadmap.md)
 2. **Xử lý tại edge** — không phụ thuộc internet khi emergency
 3. **Chỉ lưu tiles, không lưu video** — giảm ~98% dung lượng
 4. **Dual mode** — cùng core engine cho cả peacetime và emergency
-5. **Cộng đồng trước, kinh doanh sau** — core tốt → người dùng tự đến
 
 ## License
 
