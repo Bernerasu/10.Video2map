@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video2Map — Bản đồ cộng đồng từ drone</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Barlow:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e14;
+    --surface: #111720;
+    --surface2: #161d28;
+    --orange: #f97316;
+    --amber: #fbbf24;
+    --red: #ef4444;
+    --green: #22c55e;
+    --blue: #38bdf8;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --border: #1e2d3d;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* GRID BACKGROUND */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 64px 0 48px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(249,115,22,0.12);
+    border: 1px solid rgba(249,115,22,0.3);
+    color: var(--orange);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    padding: 4px 12px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .tag::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--orange);
+    border-radius: 50%;
+    animation: blink 1.4s infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(64px, 12vw, 110px);
+    line-height: 0.92;
+    letter-spacing: 0.02em;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+
+  h1 span {
+    color: var(--orange);
+  }
+
+  .hero-sub {
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 560px;
+    margin-top: 20px;
+    margin-bottom: 32px;
+    font-weight: 400;
+  }
+
+  .hero-sub strong {
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    color: var(--orange);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* ── SECTION ── */
+  .section {
+    padding: 48px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--orange);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 38px;
+    letter-spacing: 0.04em;
+    color: #fff;
+    margin-bottom: 24px;
+  }
+
+  /* ── PIPELINE ── */
+  .pipeline {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin: 32px 0;
+    overflow-x: auto;
+  }
+
+  .pipe-step {
+    flex: 1;
+    min-width: 110px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 16px 14px;
+    position: relative;
+    text-align: center;
+  }
+
+  .pipe-step:not(:last-child)::after {
+    content: '▶';
+    position: absolute;
+    right: -13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--orange);
+    font-size: 14px;
+    z-index: 2;
+    background: var(--bg);
+    padding: 2px;
+  }
+
+  .pipe-icon {
+    font-size: 24px;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .pipe-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    display: block;
+  }
+
+  .pipe-detail {
+    font-size: 11px;
+    color: var(--orange);
+    margin-top: 4px;
+    display: block;
+  }
+
+  /* ── CARDS ── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 8px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px;
+  }
+
+  .card-icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .card h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+    color: #fff;
+  }
+
+  .card p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .card p strong {
+    color: var(--text);
+  }
+
+  /* ── REQUIREMENTS TABLE ── */
+  .req-grid {
+    display: grid;
+    gap: 2px;
+    margin-top: 12px;
+  }
+
+  .req-row {
+    display: grid;
+    grid-template-columns: 28px 180px 1fr;
+    align-items: start;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-size: 14px;
+  }
+
+  .req-row:hover {
+    border-color: rgba(249,115,22,0.3);
+    background: rgba(249,115,22,0.04);
+  }
+
+  .req-icon { font-size: 16px; padding-top: 1px; }
+
+  .req-key {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding-top: 2px;
+  }
+
+  .req-val {
+    color: var(--text);
+    font-size: 13px;
+  }
+
+  .req-val .good { color: var(--green); font-weight: 600; }
+  .req-val .bad  { color: var(--red);   font-weight: 600; }
+  .req-val .warn { color: var(--amber); font-weight: 600; }
+
+  /* ── WARNING BOX ── */
+  .warning {
+    border: 1px solid var(--red);
+    background: rgba(239,68,68,0.07);
+    padding: 20px 24px;
+    margin: 24px 0;
+    position: relative;
+  }
+
+  .warning::before {
+    content: '⚠ CẤM BAY';
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--red);
+    letter-spacing: 0.15em;
+    position: absolute;
+    top: -10px;
+    left: 16px;
+    background: var(--bg);
+    padding: 0 8px;
+  }
+
+  .warning-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .warning-list li {
+    font-size: 13px;
+    color: var(--text);
+    display: flex;
+    align-items: start;
+    gap: 8px;
+    line-height: 1.5;
+  }
+
+  .warning-list li::before {
+    content: '✕';
+    color: var(--red);
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .warning-note {
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    border-top: 1px solid rgba(239,68,68,0.2);
+    padding-top: 12px;
+  }
+
+  /* ── FLIGHT PATTERN ── */
+  .pattern-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 24px;
+    margin: 16px 0;
+    display: flex;
+    gap: 32px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .flight-svg {
+    flex-shrink: 0;
+  }
+
+  .pattern-desc {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .pattern-desc h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+    color: var(--orange);
+  }
+
+  .spec-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .spec-item:last-child { border-bottom: none; }
+  .spec-key { color: var(--muted); }
+  .spec-val { color: var(--text); font-weight: 600; font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+
+  /* ── ALTITUDE VISUAL ── */
+  .altitude-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 16px 0;
+  }
+
+  .alt-row {
+    display: grid;
+    grid-template-columns: 80px 1fr 100px;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .alt-label { color: var(--muted); text-align: right; }
+
+  .alt-track {
+    height: 22px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .alt-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--orange), rgba(249,115,22,0.4));
+    position: relative;
+  }
+
+  .alt-fill::after {
+    content: '🚁';
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+  }
+
+  .alt-desc { color: var(--text); font-size: 11px; letter-spacing: 0; font-family: 'Barlow', sans-serif; }
+
+  /* ── STEPS ── */
+  .steps {
+    display: grid;
+    gap: 2px;
+    counter-reset: step;
+  }
+
+  .step {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 16px;
+    align-items: start;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    counter-increment: step;
+  }
+
+  .step-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    color: var(--orange);
+    opacity: 0.5;
+    line-height: 1;
+    text-align: center;
+  }
+
+  .step h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: #fff;
+  }
+
+  .step p {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .step code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    background: rgba(56,189,248,0.1);
+    color: var(--blue);
+    padding: 2px 6px;
+    display: inline-block;
+    margin-top: 6px;
+  }
+
+  /* ── OSS BADGE ── */
+  .oss-bar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+
+  .badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 8px 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .badge span { color: var(--green); font-weight: 600; }
+
+  /* ── FOOTER ── */
+  .footer {
+    padding-top: 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: gap;
+    gap: 16px;
+  }
+
+  .footer-brand {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 0.05em;
+    color: var(--orange);
+  }
+
+  .footer-note {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    h1 { font-size: 60px; }
+    .req-row { grid-template-columns: 28px 1fr; }
+    .req-key { display: none; }
+    .pipeline { gap: 2px; }
+    .pipe-step:not(:last-child)::after { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="tag">Dự án mã nguồn mở · Việt Nam</div>
+    <h1>VIDEO<span>2</span><br>MAP</h1>
+    <p class="hero-sub">
+      Biến video drone thành <strong>bản đồ 2D trong ≤ 10 phút</strong> —
+      chạy offline, phục vụ cứu trợ thiên tai và crowdsource bản đồ cộng đồng Việt Nam.
+    </p>
+    <div class="stats-row">
+      <div class="stat">
+        <span class="stat-num">≤10</span>
+        <span class="stat-label">Phút / video</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">100%</span>
+        <span class="stat-label">Offline — không cần internet</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">AGPLv3</span>
+        <span class="stat-label">Miễn phí mãi mãi</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PIPELINE -->
+  <div class="section">
+    <div class="section-label">Pipeline tự động</div>
+    <div class="pipeline">
+      <div class="pipe-step">
+        <span class="pipe-icon">🎬</span>
+        <span class="pipe-name">Video DJI</span>
+        <span class="pipe-detail">4K H.264</span>
+      </div>
+      <div class="pipe-step">
+        <span class="pipe-icon">⚡</span>
+        <span class="pipe-name">NVDEC</span>
+        <span class="pipe-detail">Hardware decode</span>
+      </div>
+      <div class="pipe-step">
+        <span class="pipe-icon">📍</span>
+        <span class="pipe-name">GPS Meta</span>
+        <span class="pipe-detail">DJI binary</span>
+      </div>
+      <div class="pipe-step">
+        <span class="pipe-icon">🧩</span>
+        <span class="pipe-name">Tile Map</span>
+        <span class="pipe-detail">z/x/y tiles</span>
+      </div>
+      <div class="pipe-step">
+        <span class="pipe-icon">🤖</span>
+        <span class="pipe-name">AI Detect</span>
+        <span class="pipe-detail">YOLOv8</span>
+      </div>
+      <div class="pipe-step" style="border-color: rgba(249,115,22,0.5); background: rgba(249,115,22,0.06);">
+        <span class="pipe-icon">🗺️</span>
+        <span class="pipe-name">Bản đồ</span>
+        <span class="pipe-detail" style="color: var(--green);">Leaflet.js</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- HAI CHẾ ĐỘ -->
+  <div class="section">
+    <div class="section-label">Hai chế độ vận hành</div>
+    <div class="cards">
+      <div class="card" style="border-color: rgba(56,189,248,0.3);">
+        <span class="card-icon">☀️</span>
+        <h3>Peacetime — Ngày thường</h3>
+        <p>Cộng đồng bay drone → upload video lên Google Drive → Jetson tự động xử lý → <strong>phủ dần bản đồ Việt Nam</strong> theo thời gian.</p>
+      </div>
+      <div class="card" style="border-color: rgba(249,115,22,0.4);">
+        <span class="card-icon">🚨</span>
+        <h3>Emergency — Thiên tai</h3>
+        <p>Drone bay tại hiện trường → Jetson xử lý offline tại chỗ → <strong>so sánh trước/sau</strong> → đánh giá thiệt hại → cứu hộ chính xác.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- YÊU CẦU KỸ THUẬT -->
+  <div class="section">
+    <div class="section-label">Yêu cầu kỹ thuật khi quay video</div>
+    <h2>Thiết bị & Video</h2>
+
+    <div class="req-grid">
+      <div class="req-row">
+        <span class="req-icon">📱</span>
+        <span class="req-key">Drone</span>
+        <span class="req-val">
+          <span class="good">✓ DJI (Mini 2/3/4 Pro, Air 2S, Mavic 3...)</span><br>
+          <span class="bad">✕ GoPro, action cam, điện thoại</span> — không có GPS metadata chuẩn
+        </span>
+      </div>
+      <div class="req-row">
+        <span class="req-icon">🎥</span>
+        <span class="req-key">Định dạng</span>
+        <span class="req-val">
+          <span class="good">✓ MP4 gốc từ drone, không chỉnh sửa</span><br>
+          <span class="bad">✕ Đã edit, re-encode, hoặc cắt ghép</span> — mất GPS metadata
+        </span>
+      </div>
+      <div class="req-row">
+        <span class="req-icon">📐</span>
+        <span class="req-key">Độ phân giải</span>
+        <span class="req-val">
+          <span class="good">✓ 4K (ưu tiên)</span> · <span class="warn">⚠ 1080p tối thiểu</span>
+        </span>
+      </div>
+      <div class="req-row">
+        <span class="req-icon">🎯</span>
+        <span class="req-key">Góc camera</span>
+        <span class="req-val">
+          <span class="good">✓ Gimbal thẳng đứng xuống 90°</span><br>
+          <span class="bad">✕ Quay cảnh ngang / oblique</span> — hệ thống không xử lý được
+        </span>
+      </div>
+      <div class="req-row">
+        <span class="req-icon">⚡</span>
+        <span class="req-key">Tốc độ bay</span>
+        <span class="req-val">
+          <span class="good">✓ 3 – 5 m/s</span><br>
+          <span class="bad">✕ Nhanh hơn 5 m/s</span> — overlap kém, stitching lỗi
+        </span>
+      </div>
+      <div class="req-row">
+        <span class="req-icon">☁️</span>
+        <span class="req-key">Thời tiết</span>
+        <span class="req-val">
+          <span class="good">✓ Ánh sáng đều, ban ngày</span><br>
+          <span class="bad">✕ Gió > cấp 3, mưa, sương mù, nắng gắt giữa trưa</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- ALTITUDE -->
+    <h2 style="margin-top: 36px;">Độ cao bay</h2>
+    <div class="altitude-bar">
+      <div class="alt-row">
+        <span class="alt-label">50–80m</span>
+        <div class="alt-track"><div class="alt-fill" style="width: 30%;"></div></div>
+        <span class="alt-desc">Đô thị, chi tiết cao</span>
+      </div>
+      <div class="alt-row">
+        <span class="alt-label">100–150m</span>
+        <div class="alt-track"><div class="alt-fill" style="width: 55%;"></div></div>
+        <span class="alt-desc">Nông thôn, diện tích rộng</span>
+      </div>
+      <div class="alt-row">
+        <span class="alt-label">200–300m</span>
+        <div class="alt-track"><div class="alt-fill" style="width: 90%;"></div></div>
+        <span class="alt-desc">Khảo sát tổng quan lớn</span>
+      </div>
+    </div>
+
+    <!-- FLIGHT PATTERN -->
+    <h2 style="margin-top: 36px;">Pattern bay — "Cắt cỏ"</h2>
+    <div class="pattern-box">
+      <svg class="flight-svg" width="200" height="160" viewBox="0 0 200 160">
+        <defs>
+          <marker id="arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L6,3 z" fill="#f97316"/>
+          </marker>
+        </defs>
+        <!-- ground -->
+        <rect width="200" height="160" fill="rgba(22,29,40,0.8)" rx="2"/>
+        <!-- grid -->
+        <rect x="20" y="20" width="160" height="120" fill="rgba(56,189,248,0.04)" stroke="rgba(56,189,248,0.1)" stroke-width="1"/>
+        <!-- flight lines -->
+        <line x1="30" y1="38" x2="170" y2="38" stroke="#f97316" stroke-width="2" marker-end="url(#arrow)" stroke-dasharray="none"/>
+        <line x1="170" y1="38" x2="170" y2="62" stroke="#f97316" stroke-width="1.5" opacity="0.4" stroke-dasharray="4,3"/>
+        <line x1="170" y1="62" x2="30" y2="62" stroke="#f97316" stroke-width="2" marker-end="url(#arrow)" transform="scale(-1,1) translate(-200,0)"/>
+        <line x1="30" y1="62" x2="30" y2="86" stroke="#f97316" stroke-width="1.5" opacity="0.4" stroke-dasharray="4,3"/>
+        <line x1="30" y1="86" x2="170" y2="86" stroke="#f97316" stroke-width="2" marker-end="url(#arrow)"/>
+        <line x1="170" y1="86" x2="170" y2="110" stroke="#f97316" stroke-width="1.5" opacity="0.4" stroke-dasharray="4,3"/>
+        <line x1="170" y1="110" x2="30" y2="110" stroke="#f97316" stroke-width="2" marker-end="url(#arrow)" transform="scale(-1,1) translate(-200,0)"/>
+        <!-- overlap indicator -->
+        <rect x="30" y="56" width="140" height="12" fill="rgba(249,115,22,0.1)" stroke="rgba(249,115,22,0.3)" stroke-width="1" stroke-dasharray="3,2"/>
+        <text x="100" y="66" text-anchor="middle" fill="#f97316" font-size="9" font-family="IBM Plex Mono, monospace">OVERLAP ≥60%</text>
+        <!-- drone icon at start -->
+        <text x="26" y="35" font-size="14">🚁</text>
+      </svg>
+
+      <div class="pattern-desc">
+        <h3>Lawnmower Pattern</h3>
+        <div class="spec-item">
+          <span class="spec-key">Overlap ngang</span>
+          <span class="spec-val">≥ 60%</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-key">Overlap dọc</span>
+          <span class="spec-val">≥ 30%</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-key">Tốc độ</span>
+          <span class="spec-val">3 – 5 m/s</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-key">Lượt đầu & cuối</span>
+          <span class="spec-val">Bay qua GCP</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KHU VỰC CẤM BAY -->
+  <div class="section">
+    <div class="section-label">An toàn & Pháp lý</div>
+    <h2>Khu vực KHÔNG được bay</h2>
+
+    <div class="warning">
+      <ul class="warning-list">
+        <li>Sân bay, căn cứ không quân, hành lang bay thương mại</li>
+        <li>Căn cứ quân sự, khu vực quốc phòng, cơ sở an ninh</li>
+        <li>Khu vực cấm bay theo Nghị định 36/2008/NĐ-CP và các quy định hiện hành</li>
+        <li>Trong bán kính 8km từ sân bay dân sự nếu chưa có phép</li>
+        <li>Khu vực biên giới, vùng biển nhạy cảm</li>
+        <li>Trên đầu đám đông, khu dân cư đông đúc</li>
+        <li>Ban đêm hoặc ngoài tầm nhìn của người điều khiển (BVLOS)</li>
+        <li>Khu vực đang có sự kiện an ninh lớn</li>
+      </ul>
+      <p class="warning-note">
+        ⚠ Người bay chịu hoàn toàn trách nhiệm pháp lý. Kiểm tra ứng dụng <strong>DJI Fly</strong> hoặc liên hệ Cục Hàng không Việt Nam trước khi bay.
+        Vi phạm khu vực cấm có thể bị xử lý hình sự theo luật Hàng không dân dụng.
+      </p>
+    </div>
+  </div>
+
+  <!-- CÁCH ĐÓNG GÓP -->
+  <div class="section">
+    <div class="section-label">Tham gia ngay</div>
+    <h2>3 bước đóng góp dữ liệu</h2>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div>
+          <h3>Quay video đúng kỹ thuật</h3>
+          <p>DJI drone · pattern cắt cỏ · gimbal 90° · không edit file · đúng khu vực được phép bay.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div>
+          <h3>Upload file MP4 gốc lên Google Drive</h3>
+          <p>Đặt quyền chia sẻ "Bất kỳ ai có link đều xem được". Không cần xử lý gì thêm.</p>
+          <code>File → Share → Anyone with the link → Viewer</code>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div>
+          <h3>Gửi link kèm thông tin bay</h3>
+          <p>Địa điểm (tỉnh/huyện) · Độ cao bay (mét) · Ngày quay.<br>
+          Gửi về GitHub Issue hoặc email dự án.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="oss-bar">
+      <div class="badge">🛡️ License: <span>GNU AGPLv3</span></div>
+      <div class="badge">📦 Platform: <span>Jetson Orin Nano 8GB</span></div>
+      <div class="badge">🤖 AI: <span>YOLOv8 + NVDEC</span></div>
+      <div class="badge">🗺️ Maps: <span>OpenStreetMap tiles</span></div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-brand">VIDEO2MAP</div>
+    <div class="footer-note">Bản đồ từ cộng đồng · Cho cộng đồng · github.com/[repo]</div>
+  </div>
+
+</div>
+</body>
+</html>
