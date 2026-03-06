@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video2Map — Bản đồ cộng đồng từ drone | Cứu trợ thiên tai Việt Nam</title>
+<meta name="description" content="Hệ thống tạo bản đồ 2D từ video drone — phục vụ cứu trợ thiên tai & crowdsource bản đồ Việt Nam. Open source, offline, chạy trên Jetson.">
+<meta property="og:title" content="Video2Map — Bản đồ cộng đồng từ drone">
+<meta property="og:description" content="Biến video drone thành bản đồ cứu hộ trong ≤10 phút. Open source AGPLv3.">
+<meta property="og:url" content="https://map.quanlyviec.vn">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f1a;
+    --surface: #111827;
+    --surface2: #1a2234;
+    --accent: #10b981;
+    --accent-dim: rgba(16,185,129,0.15);
+    --orange: #f97316;
+    --red: #ef4444;
+    --amber: #fbbf24;
+    --blue: #38bdf8;
+    --text: #e8edf5;
+    --muted: #64748b;
+    --border: #1e293b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(16,185,129,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(16,185,129,0.02) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page { position: relative; z-index: 1; }
+  .container { max-width: 860px; margin: 0 auto; padding: 0 24px; }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    position: sticky; top: 0;
+    background: rgba(10,15,26,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 0;
+    z-index: 100;
+  }
+  .topbar .container { display: flex; align-items: center; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-logo {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--accent), #059669);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 900; color: #fff;
+  }
+  .brand-name { font-size: 17px; font-weight: 800; letter-spacing: -0.5px; }
+  .brand-name span { color: var(--accent); }
+  .topbar-cta {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--accent); color: #000;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 13px; font-weight: 700;
+    padding: 8px 18px; border-radius: 7px;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .topbar-cta:hover { background: #34d399; transform: translateY(-1px); }
+
+  /* ── HERO ── */
+  .hero { padding: 72px 0 56px; border-bottom: 1px solid var(--border); }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--accent-dim);
+    border: 1px solid rgba(16,185,129,0.3);
+    color: var(--accent);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; letter-spacing: 0.1em;
+    padding: 5px 14px; text-transform: uppercase; margin-bottom: 28px;
+  }
+  .hero-tag-dot {
+    width: 6px; height: 6px; background: var(--accent);
+    border-radius: 50%; animation: blink 2s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .hero h1 {
+    font-size: clamp(32px, 6vw, 52px);
+    font-weight: 900; line-height: 1.1;
+    letter-spacing: -1.5px; margin-bottom: 20px;
+  }
+  .hero h1 em { font-style: normal; color: var(--accent); }
+  .hero-sub { font-size: 17px; color: var(--muted); max-width: 560px; line-height: 1.7; margin-bottom: 36px; }
+  .hero-stats { display: flex; gap: 32px; flex-wrap: wrap; }
+  .hero-stat-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 28px; font-weight: 700; color: var(--accent); line-height: 1;
+  }
+  .hero-stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* ── CTA BANNER ── */
+  .cta-banner {
+    background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(5,150,105,0.08));
+    border: 1px solid rgba(16,185,129,0.25);
+    border-radius: 12px; padding: 32px;
+    margin: 48px 0;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 24px; flex-wrap: wrap;
+  }
+  .cta-text h2 { font-size: 22px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.5px; }
+  .cta-text p { font-size: 14px; color: var(--muted); }
+  .cta-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--accent); color: #000;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 15px; font-weight: 700;
+    padding: 14px 32px; border-radius: 8px;
+    text-decoration: none; transition: all 0.2s; white-space: nowrap;
+  }
+  .cta-btn:hover { background: #34d399; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(16,185,129,0.3); }
+
+  /* ── SECTIONS ── */
+  .section { padding: 48px 0; border-bottom: 1px solid var(--border); }
+  .sec-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; color: var(--accent);
+    text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 10px;
+  }
+  .section h2 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 24px; }
+
+  /* ── PIPELINE ── */
+  .pipeline { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap: 4px; margin-top: 16px; }
+  .pipe-step {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 18px 14px; text-align: center; position: relative;
+  }
+  .pipe-num { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--accent); margin-bottom: 8px; }
+  .pipe-icon { font-size: 24px; margin-bottom: 8px; }
+  .pipe-title { font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .pipe-detail { font-size: 10px; color: var(--muted); }
+  .pipe-step::after {
+    content: '→'; position: absolute; right: -12px; top: 50%;
+    transform: translateY(-50%); color: var(--accent); font-size: 16px; z-index: 2;
+  }
+  .pipe-step:last-child::after { display: none; }
+  @media (max-width:640px) { .pipeline{grid-template-columns:1fr 1fr} .pipe-step::after{display:none} }
+
+  /* ── MODES ── */
+  .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width:640px) { .modes{grid-template-columns:1fr} }
+  .mode-card { background: var(--surface); border: 1px solid var(--border); padding: 28px 24px; border-radius: 8px; }
+  .mode-card h3 { font-size: 18px; font-weight: 800; margin-bottom: 6px; }
+  .mode-tag {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; display: block;
+  }
+  .mode-peace .mode-tag { color: var(--accent); }
+  .mode-emerg .mode-tag { color: var(--orange); }
+  .mode-emerg { border-color: rgba(249,115,22,0.3); }
+  .mode-card p { font-size: 13px; color: var(--muted); line-height: 1.7; }
+  .mode-card p strong { color: var(--text); }
+
+  /* ── REQUIREMENTS ── */
+  .reqs { margin-top: 16px; }
+  .req-row {
+    display: grid; grid-template-columns: 32px 1fr; gap: 12px;
+    padding: 14px 16px; background: var(--surface);
+    border: 1px solid var(--border); margin-bottom: 4px; align-items: start;
+  }
+  .req-icon { font-size: 16px; padding-top: 2px; }
+  .req-text { font-size: 14px; color: var(--text); line-height: 1.6; }
+  .good { color: #22c55e; font-weight: 600; }
+  .bad { color: #ef4444; font-weight: 600; }
+
+  /* ── WARNING ── */
+  .warning {
+    border: 1px solid var(--red); background: rgba(239,68,68,0.06);
+    border-radius: 8px; padding: 24px; margin: 24px 0;
+  }
+  .warning-title {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--red); letter-spacing: 0.12em; text-transform: uppercase;
+    margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+  }
+  .warn-list { list-style: none; padding: 0; }
+  .warn-list li { font-size: 13px; color: var(--text); padding: 5px 0 5px 20px; position: relative; line-height: 1.6; }
+  .warn-list li::before { content: '✕'; position: absolute; left: 0; color: var(--red); font-weight: 700; font-size: 11px; }
+  .warn-note { font-size: 12px; color: var(--muted); margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(239,68,68,0.2); line-height: 1.7; }
+  .warn-note strong { color: var(--amber); }
+
+  /* ── STEPS ── */
+  .steps { margin-top: 16px; }
+  .step { display: grid; grid-template-columns: 56px 1fr; gap: 16px; padding: 20px 0; border-bottom: 1px solid var(--border); align-items: start; }
+  .step:last-child { border-bottom: none; }
+  .step-num { font-family: 'IBM Plex Mono', monospace; font-size: 28px; font-weight: 700; color: var(--accent); line-height: 1; }
+  .step h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .step p { font-size: 13px; color: var(--muted); line-height: 1.7; }
+  .step code { background: var(--surface2); padding: 2px 8px; border-radius: 3px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--accent); }
+
+  /* ── BADGES ── */
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 32px; }
+  .badge { background: var(--surface); border: 1px solid var(--border); padding: 6px 14px; font-size: 12px; color: var(--muted); border-radius: 4px; }
+  .badge span { color: var(--text); font-weight: 600; }
+
+  /* ── FOOTER ── */
+  .footer { padding: 48px 0 32px; text-align: center; }
+  .footer-brand { font-size: 32px; font-weight: 900; letter-spacing: 4px; color: var(--border); margin-bottom: 8px; }
+  .footer-note { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+  .footer-note a { color: var(--accent); text-decoration: none; }
+  .footer-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--accent); color: #000;
+    font-family: 'Be Vietnam Pro', sans-serif;
+    font-size: 14px; font-weight: 700;
+    padding: 12px 28px; border-radius: 8px;
+    text-decoration: none; transition: all 0.2s;
+  }
+  .footer-cta:hover { background: #34d399; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <div class="container">
+      <div class="brand">
+        <div class="brand-logo">V2</div>
+        <div class="brand-name">Video<span>2</span>Map</div>
+      </div>
+      <a href="/map" class="topbar-cta">🗺️ Xem bản đồ</a>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <div class="hero">
+      <div class="hero-tag"><div class="hero-tag-dot"></div>Open Source · AGPLv3</div>
+      <h1>Biến video drone<br>thành <em>bản đồ cứu hộ</em></h1>
+      <p class="hero-sub">Khi lũ lụt xảy ra, đội cứu hộ cần bản đồ hiện tại — không phải ảnh vệ tinh cũ. Video2Map xử lý video drone thành bản đồ 2D, chạy offline trên phần cứng edge AI.</p>
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="hero-stat-value">≤10'</div><div class="hero-stat-label">Video → bản đồ</div></div>
+        <div class="hero-stat"><div class="hero-stat-value">100%</div><div class="hero-stat-label">Offline</div></div>
+        <div class="hero-stat"><div class="hero-stat-value">~3cm</div><div class="hero-stat-label">/ pixel</div></div>
+      </div>
+    </div>
+
+    <div class="cta-banner">
+      <div class="cta-text">
+        <h2>🗺️ Xem bản đồ Việt Nam</h2>
+        <p>Ảnh vệ tinh Esri + OpenStreetMap — chờ drone overlay từ cộng đồng</p>
+      </div>
+      <a href="/map" class="cta-btn">Mở bản đồ →</a>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Pipeline</div>
+      <h2>Từ video → bản đồ trong 6 bước</h2>
+      <div class="pipeline">
+        <div class="pipe-step"><div class="pipe-num">01</div><div class="pipe-icon">📹</div><div class="pipe-title">Video DJI</div><div class="pipe-detail">4K H.264 + GPS</div></div>
+        <div class="pipe-step"><div class="pipe-num">02</div><div class="pipe-icon">⚡</div><div class="pipe-title">NVDEC</div><div class="pipe-detail">Hardware decode</div></div>
+        <div class="pipe-step"><div class="pipe-num">03</div><div class="pipe-icon">🖼️</div><div class="pipe-title">Trích frame</div><div class="pipe-detail">GPS + interval</div></div>
+        <div class="pipe-step"><div class="pipe-num">04</div><div class="pipe-icon">📍</div><div class="pipe-title">Định vị</div><div class="pipe-detail">GPS + CV dual</div></div>
+        <div class="pipe-step"><div class="pipe-num">05</div><div class="pipe-icon">🧩</div><div class="pipe-title">Cắt tiles</div><div class="pipe-detail">Slippy z/x/y</div></div>
+        <div class="pipe-step"><div class="pipe-num">06</div><div class="pipe-icon">🌐</div><div class="pipe-title">Bản đồ web</div><div class="pipe-detail">Leaflet.js</div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Hai chế độ</div>
+      <h2>Peacetime & Emergency</h2>
+      <div class="modes">
+        <div class="mode-card mode-peace">
+          <span class="mode-tag">☀️ Ngày thường</span>
+          <h3>Crowdsource bản đồ</h3>
+          <p>Cộng đồng drone pilot bay và upload video. Hệ thống xử lý tự động, <strong>phủ dần bản đồ Việt Nam</strong> theo hiệu ứng vết dầu loang.</p>
+        </div>
+        <div class="mode-card mode-emerg">
+          <span class="mode-tag">🚨 Thiên tai</span>
+          <h3>Bản đồ cứu hộ real-time</h3>
+          <p>Drone bay tại hiện trường → Jetson xử lý <strong>offline, tại chỗ</strong>. So sánh với bản đồ nền → đánh giá thiệt hại. <strong>Không cần internet.</strong></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Yêu cầu video</div>
+      <h2>Cách quay video đúng kỹ thuật</h2>
+      <div class="reqs">
+        <div class="req-row"><div class="req-icon">🚁</div><div class="req-text"><span class="good">Drone DJI</span> — cần GPS metadata chuẩn DJI. Các hãng khác chưa hỗ trợ.</div></div>
+        <div class="req-row"><div class="req-icon">🎥</div><div class="req-text"><span class="good">Gimbal 90° thẳng xuống</span> — không nghiêng. Hệ thống chưa xử lý góc chụp xiên.</div></div>
+        <div class="req-row"><div class="req-icon">✈️</div><div class="req-text"><span class="good">Pattern cắt cỏ</span> — bay qua lại, overlap ngang ≥60%, dọc ≥30%. Tốc độ 3-5 m/s.</div></div>
+        <div class="req-row"><div class="req-icon">📏</div><div class="req-text"><span class="good">Độ cao 30-100m</span> — khuyến nghị 50-80m. Thấp = chi tiết hơn nhưng phủ ít.</div></div>
+        <div class="req-row"><div class="req-icon">⚠️</div><div class="req-text"><span class="bad">KHÔNG edit file</span> — không cắt, không nén lại. GPS metadata sẽ bị mất.</div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">An toàn & Pháp lý</div>
+      <h2>Khu vực KHÔNG được bay</h2>
+      <div class="warning">
+        <div class="warning-title">⚠ NGHIÊM CẤM</div>
+        <ul class="warn-list">
+          <li>Sân bay, căn cứ không quân, hành lang bay thương mại</li>
+          <li>Căn cứ quân sự, khu vực quốc phòng, cơ sở an ninh</li>
+          <li>Khu phi quân sự (DMZ) và vùng biên giới nhạy cảm</li>
+          <li>Trong bán kính 8km từ sân bay dân sự (nếu chưa có phép)</li>
+          <li>Khu vực biển nhạy cảm về quốc phòng</li>
+          <li>Trên đầu đám đông, khu dân cư đông đúc</li>
+          <li>Ban đêm hoặc ngoài tầm nhìn (BVLOS)</li>
+          <li>Khu vực đang diễn ra sự kiện an ninh lớn</li>
+        </ul>
+        <p class="warn-note">Người bay chịu <strong>hoàn toàn trách nhiệm pháp lý</strong>. Kiểm tra <strong>DJI Fly</strong> hoặc liên hệ Cục Hàng không Việt Nam trước khi bay.</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sec-label">Tham gia ngay</div>
+      <h2>3 bước đóng góp dữ liệu</h2>
+      <div class="steps">
+        <div class="step"><div class="step-num">01</div><div><h3>Quay video đúng kỹ thuật</h3><p>DJI drone · pattern cắt cỏ · gimbal 90° · không edit file · đúng khu vực được phép bay.</p></div></div>
+        <div class="step"><div class="step-num">02</div><div><h3>Upload file MP4 gốc lên Google Drive</h3><p>Không nén, không cắt. Đặt quyền: <code>Anyone with the link → Viewer</code></p></div></div>
+        <div class="step"><div class="step-num">03</div><div><h3>Gửi link kèm thông tin bay</h3><p>Địa điểm (tỉnh/huyện) · Độ cao (mét) · Ngày quay. Gửi về GitHub Issue hoặc email dự án.</p></div></div>
+      </div>
+    </div>
+
+    <div class="badges">
+      <div class="badge">🛡️ License: <span>GNU AGPLv3</span></div>
+      <div class="badge">📦 Platform: <span>Jetson Orin Nano 8GB</span></div>
+      <div class="badge">🤖 AI: <span>YOLOv8 + NVDEC</span></div>
+      <div class="badge">🗺️ Maps: <span>Esri + OSM</span></div>
+    </div>
+
+    <div class="footer">
+      <div class="footer-brand">VIDEO2MAP</div>
+      <div class="footer-note">Bản đồ từ cộng đồng · Cho cộng đồng<br><a href="https://github.com" target="_blank">GitHub</a> · <a href="/map">Bản đồ</a></div>
+      <a href="/map" class="footer-cta">🗺️ Xem bản đồ Việt Nam →</a>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
